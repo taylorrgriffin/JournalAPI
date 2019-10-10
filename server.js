@@ -2,6 +2,8 @@ const cors = require('cors')
 const express = require('express');
 const bodyParser = require('body-parser');
 
+const { addEntry, getEntries, deleteEntry } = require('./db.connection')
+
 const app = express();
 
 app.use(
@@ -24,13 +26,17 @@ app.use((req, res, next) => {
     next();
 });
 
-app.get('/', (req, res, next) => {
-    res.status(200).send("OK");
-})
+app.get('/entry', (req, res, next) => {
+    getEntries(res);
+});
 
-app.get('*', (req, res, next) => {
-    res.status(404).send('Page not found.')
-})
+app.post('/entry', (req, res, next) => {
+    addEntry(req.body.entryObj, res);
+});
+
+app.delete('/entry/:entryId', (req, res, next) => {
+    deleteEntry(req.params.entryId, res);
+});
 
 const PORT = process.env.PORT || 3000
 app.listen(PORT, function() {
