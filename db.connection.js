@@ -15,6 +15,10 @@ function addEntry(entryObj, responseObj) {
     dbo.createCollection("entries", (err, res) => {
       resolveError(err, responseObj);
     });
+    // add datetime stamp to entry
+    const now = new Date();
+    entryObj.createDate = now;
+    entryObj.updateDate = now;
     // add new entry to collection
     dbo.collection("entries").insertOne(entryObj, (err, res) => {
       resolveError(err, responseObj);
