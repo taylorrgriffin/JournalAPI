@@ -104,20 +104,21 @@ function deleteEntry(entryId, responseObj) {
 function deleteAllEntries(responseObj) {
   MongoClient.connect(url, (err, db) => {
     if (err) {
-      responseObj.status(400).send(err)
+      responseObj.status(400).send(err);
     }
     else {
       var dbo = db.db("mydb");
       dbo.collection("entries").remove((err, obj) => {
         if (err) {
           responseObj.status(400).send(err)
+          db.close();
         }
         else {
-          obj.deletedCount > 0 ? responseObj.status(200).send("Deleted all entries.") : resolveError(new Error("No entries were deleted."), responseObj);
+          obj ? responseObj.status(200).send("Deleted all entries.") : resolveError(new Error("Something went wrong..."), responseObj);
+          db.close();
         }
       });
     }
-    db.close();
   });
 }
 
