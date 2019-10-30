@@ -88,16 +88,25 @@ function editEntry(entryObj, responseObj) {
 function deleteEntry(entryId, responseObj) {
   // connect to db instance
   MongoClient.connect(url, (err, db) => {
-    resolveError(err, responseObj);
-    var dbo = db.db("mydb");
-    // specify id of entry to delete
-    const q = { _id: ObjectId(entryId) };
-    dbo.collection("entries").deleteOne(q, (err, obj) => {
-      resolveError(err, responseObj);
-      console.log(obj);
-      obj.deletedCount > 0 ? responseObj.status(200).send("Deleted entry.") : resolveError(new Error("No such entry with id " + entryId), responseObj);
-    });
-    db.close();
+    if (err) {
+      responseObj.status(400).send(err);
+    }
+    else {
+      var dbo = db.db("mydb");
+      // specify id of entry to delete
+      const q = { _id: ObjectId(entryId) };
+      dbo.collection("entries").deleteOne(q, (err, obj) => {
+        if (err) {
+          responseObj.status(400).send(err);
+          db.close();
+        }
+        else {
+          console.log(obj);
+          obj.deletedCount > 0 ? responseObj.status(200).send("Deleted entry.") : resolveError(new Error("No such entry with id " + entryId), responseObj);
+          db.close();
+        }
+      });
+    }
   });
 }
 
