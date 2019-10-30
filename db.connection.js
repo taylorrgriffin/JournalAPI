@@ -2,7 +2,6 @@ const ObjectId = require('mongodb').ObjectId;
 const MongoClient = require('mongodb').MongoClient;
 const url = "mongodb://localhost:27017/mydb";
 
-// TODO: nest if/else for 
 // TODO: test rest of endpoints
 // TODO: editEntry endpoint 
 
@@ -17,11 +16,12 @@ function addEntry(entryObj, responseObj) {
       responseObj.status(400).send(err)
     }
     else {
-      var dbo = db.db("mydb");
+      const dbo = db.db("mydb");
       // ensure collection exists
       dbo.createCollection("entries", (err, res) => {
         if (err) {
-          responseObj.status(400).send(err)
+          responseObj.status(400).send(err);
+          db.close();
         }
         else {
           // add datetime stamp to entry
@@ -32,17 +32,17 @@ function addEntry(entryObj, responseObj) {
           dbo.collection("entries").insertOne(entryObj, (err, res) => {
             if (err) {
               responseObj.status(400).send(err)
+              db.close();
             }
             else {
               console.info(res);
               responseObj.status(200).send({"insertedId": res.insertedId});
+              db.close();
             }
           });
         }
       });
     }
-    // close connection to db instance
-    db.close();
   });
 }
 
