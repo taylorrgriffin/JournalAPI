@@ -58,6 +58,7 @@ function getEntries(responseObj) {
       dbo.createCollection("entries", (err, res) => {
         if (err) {
           responseObj.status(400).send(err)
+          db.close();
         }
         else {
           // sort ascending by date created
@@ -66,16 +67,17 @@ function getEntries(responseObj) {
           dbo.collection("entries").find({}).sort(sort).toArray((err, result) => {
             if (err) {
               responseObj.status(400).send(err)
+              db.close();
             }
             else {
               console.info(result);
               responseObj.status(200).send(result);
+              db.close();
             }
           });
         }
       });
     }
-    db.close();
   });
 }
 
