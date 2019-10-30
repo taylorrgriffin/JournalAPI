@@ -2,6 +2,10 @@ const ObjectId = require('mongodb').ObjectId;
 const MongoClient = require('mongodb').MongoClient;
 const url = "mongodb://localhost:27017/mydb";
 
+// TODO: nest if/else for 
+// TODO: test rest of endpoints
+// TODO: editEntry endpoint 
+
 function resolveError(err, responseObj) {
   if (err) responseObj.status(400).send(err);
 }
@@ -9,22 +13,34 @@ function resolveError(err, responseObj) {
 function addEntry(entryObj, responseObj) {
   // connect to db instance
   MongoClient.connect(url, (err, db) => {
-    resolveError(err, responseObj);
-    const dbo = db.db("mydb");
-    // ensure collection exists
-    dbo.createCollection("entries", (err, res) => {
-      resolveError(err, responseObj);
-    });
-    // add datetime stamp to entry
-    const now = new Date();
-    entryObj.createDate = now;
-    entryObj.updateDate = now;
-    // add new entry to collection
-    dbo.collection("entries").insertOne(entryObj, (err, res) => {
-      resolveError(err, responseObj);
-      console.info(res);
-      responseObj.status(200).send({"insertedId": res.insertedId});
-    });
+    if (err) {
+      responseObj.status(400).send(err)
+    }
+    else {
+      var dbo = db.db("mydb");
+      // ensure collection exists
+      dbo.createCollection("entries", (err, res) => {
+        if (err) {
+          responseObj.status(400).send(err)
+        }
+        else {
+          // add datetime stamp to entry
+          const now = new Date();
+          entryObj.createDate = now;
+          entryObj.updateDate = now;
+          // add new entry to collection
+          dbo.collection("entries").insertOne(entryObj, (err, res) => {
+            if (err) {
+              responseObj.status(400).send(err)
+            }
+            else {
+              console.info(res);
+              responseObj.status(200).send({"insertedId": res.insertedId});
+            }
+          });
+        }
+      });
+    }
     // close connection to db instance
     db.close();
   });
@@ -33,18 +49,38 @@ function addEntry(entryObj, responseObj) {
 function getEntries(responseObj) {
   // connect to db instance
   MongoClient.connect(url, (err, db) => {
-    resolveError(err, responseObj);
-    var dbo = db.db("mydb");
-    // sort ascending by date created
-    const sort = { createDate: 1 }
-    // find all entries in collection
-    dbo.collection("entries").find({}).sort(sort).toArray((err, result) => {
-      resolveError(err, responseObj);
-      console.info(result);
-      responseObj.status(200).send(result);
-    });
+    if (err) {
+      responseObj.status(400).send(err)
+    }
+    else {
+      var dbo = db.db("mydb");
+      // ensure collection exists
+      dbo.createCollection("entries", (err, res) => {
+        if (err) {
+          responseObj.status(400).send(err)
+        }
+        else {
+          // sort ascending by date created
+          const sort = { createDate: 1 }
+          // find all entries in collection
+          dbo.collection("entries").find({}).sort(sort).toArray((err, result) => {
+            if (err) {
+              responseObj.status(400).send(err)
+            }
+            else {
+              console.info(result);
+              responseObj.status(200).send(result);
+            }
+          });
+        }
+      });
+    }
     db.close();
   });
+}
+
+function editEntry(entryObj, responseObj) {
+
 }
 
 function deleteEntry(entryId, responseObj) {
@@ -63,8 +99,30 @@ function deleteEntry(entryId, responseObj) {
   });
 }
 
+function deleteAllEntries(responseObj) {
+  MongoClient.connect(url, (err, db) => {
+    if (err) {
+      responseObj.status(400).send(err)
+    }
+    else {
+      var dbo = db.db("mydb");
+      dbo.collection("entries").remove((err, obj) => {
+        if (err) {
+          responseObj.status(400).send(err)
+        }
+        else {
+          obj.deletedCount > 0 ? responseObj.status(200).send("Deleted all entries.") : resolveError(new Error("No entries were deleted."), responseObj);
+        }
+      });
+    }
+    db.close();
+  });
+}
+
+
 module.exports = {
   addEntry,
   getEntries,
   deleteEntry,
+  deleteAllEntries,
 }

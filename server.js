@@ -2,7 +2,7 @@ const cors = require('cors')
 const express = require('express');
 const bodyParser = require('body-parser');
 
-const { addEntry, getEntries, deleteEntry } = require('./db.connection')
+const { addEntry, getEntries, deleteEntry, deleteAllEntries } = require('./db.connection')
 
 const app = express();
 
@@ -31,11 +31,15 @@ app.get('/entry', (req, res, next) => {
 });
 
 app.post('/entry', (req, res, next) => {
-    addEntry(req.body.entryObj, res);
+    addEntry(req.body, res);
 });
 
 app.delete('/entry/:entryId', (req, res, next) => {
     deleteEntry(req.params.entryId, res);
+});
+
+app.delete('/entry', (req, res, next) => {
+    deleteAllEntries(res);
 });
 
 const PORT = process.env.PORT || 3000
