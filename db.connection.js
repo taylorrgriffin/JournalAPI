@@ -2,9 +2,6 @@ const ObjectId = require('mongodb').ObjectId;
 const MongoClient = require('mongodb').MongoClient;
 const url = "mongodb://localhost:27017/mydb";
 
-// TODO: test rest of endpoints
-// TODO: editEntry endpoint 
-
 function resolveError(err, responseObj) {
   if (err) responseObj.status(400).send(err);
 }
@@ -81,8 +78,32 @@ function getEntries(responseObj) {
   });
 }
 
-function editEntry(entryObj, responseObj) {
-
+function editEntry(entryId, entryObj, responseObj) {
+  // connect to db instance
+  MongoClient.connect(url, (err, db) => {
+    if (err) {
+      responseObj.status(400).send(err);
+    }
+    else {
+      var dbo = db.db("mydb");
+      // specify id of entry to update
+      const q = { _id: ObjectId(entryId) };
+      // setup new values
+      const now = new Date();
+      const newVals = { $set: { subject: entryObj.subject, body: entryObj.body, updateDate: now } }
+      dbo.collection("entries").updateOne(q, newVals, (err, obj) => {
+        if (err) {
+          responseObj.status(400).send(err);
+          db.close();
+        }
+        else {
+          console.log(obj);
+          obj.modifiedCount > 0 ? responseObj.status(200).send("Updated entry.") : resolveError(new Error("No such entry with id " + entryId), responseObj);
+          db.close();
+        }
+      });
+    }
+  });
 }
 
 function deleteEntry(entryId, responseObj) {
@@ -135,6 +156,7 @@ function deleteAllEntries(responseObj) {
 module.exports = {
   addEntry,
   getEntries,
+  editEntry,
   deleteEntry,
   deleteAllEntries,
 }

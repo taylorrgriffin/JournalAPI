@@ -2,7 +2,7 @@ const cors = require('cors')
 const express = require('express');
 const bodyParser = require('body-parser');
 
-const { addEntry, getEntries, deleteEntry, deleteAllEntries } = require('./db.connection')
+const { addEntry, getEntries, deleteEntry, deleteAllEntries, editEntry } = require('./db.connection')
 
 const app = express();
 
@@ -32,6 +32,10 @@ app.get('/entry', (req, res, next) => {
 
 app.post('/entry', (req, res, next) => {
     addEntry(req.body, res);
+});
+
+app.patch('/entry/:entryId', (req, res, next) => {
+    editEntry(req.params.entryId, req.body, res);
 });
 
 app.delete('/entry/:entryId', (req, res, next) => {
