@@ -68,7 +68,7 @@ function getEntries(responseObj) {
             }
             else {
               console.info(result);
-              responseObj.status(200).send(result);
+              responseObj.status(200).send({"entries": result});
               db.close();
             }
           });
