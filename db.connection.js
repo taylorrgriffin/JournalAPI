@@ -98,7 +98,12 @@ function editEntry(entryId, entryObj, responseObj) {
         }
         else {
           console.log(obj);
-          obj.modifiedCount > 0 ? responseObj.status(200).send("Updated entry.") : resolveError(new Error("No such entry with id " + entryId), responseObj);
+          obj.modifiedCount > 0 ? 
+            responseObj.status(200).send({
+              "updatedId": entryId
+            })
+            :
+            resolveError(new Error("No such entry with id " + entryId), responseObj);
           db.close();
         }
       });
@@ -123,7 +128,7 @@ function deleteEntry(entryId, responseObj) {
         }
         else {
           console.log(obj);
-          obj.deletedCount > 0 ? responseObj.status(200).send("Deleted entry.") : resolveError(new Error("No such entry with id " + entryId), responseObj);
+          obj.deletedCount > 0 ? responseObj.status(200).send({"deleted": obj}) : resolveError(new Error("No such entry with id " + entryId), responseObj);
           db.close();
         }
       });
@@ -144,7 +149,7 @@ function deleteAllEntries(responseObj) {
           db.close();
         }
         else {
-          obj ? responseObj.status(200).send("Deleted all entries.") : resolveError(new Error("Something went wrong..."), responseObj);
+          obj ? responseObj.status(200).send({"deleted": obj}) : resolveError(new Error("Something went wrong..."), responseObj);
           db.close();
         }
       });
